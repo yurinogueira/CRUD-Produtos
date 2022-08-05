@@ -41,5 +41,7 @@ Para rodar o protótipo segue abaixo os comandos.
 
 ### Sem usar o Makefile
 
+- `rm -rf spring/target/` para garantir a remoção de qualquer build local do Back-End
+- `rm -rf vue/node_modules/` para garantir a remoção de qualquer build local do Front-End
 - `docker-compose build --force-rm --no-cache --pull` para buildar o Back-End e o Front-End
 - `docker-compose up` para subir os containers docker

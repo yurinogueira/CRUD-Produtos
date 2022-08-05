@@ -4,6 +4,9 @@ import br.net.yurinogueira.springsales.domain.service.impl.UserServiceImpl;
 import br.net.yurinogueira.springsales.security.jwt.JWTAuthFilter;
 import br.net.yurinogueira.springsales.security.jwt.JWTService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @EnableWebSecurity
@@ -29,6 +33,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
          return http
             .csrf().disable()
+            .cors().configurationSource(request-> {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(List.of("*"));
+                configuration.setAllowedMethods(List.of("GET", "PATCH", "PUT", "POST"));
+                configuration.setAllowedHeaders(List.of("*"));
+                return configuration;
+            }).and()
             .authorizeRequests()
                 .antMatchers("/api/client/**")
                     .hasAnyRole("USER", "ADMIN")

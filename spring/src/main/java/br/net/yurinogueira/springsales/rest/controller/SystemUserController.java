@@ -8,6 +8,7 @@ import br.net.yurinogueira.springsales.domain.service.RoleService;
 import br.net.yurinogueira.springsales.domain.service.impl.UserServiceImpl;
 import br.net.yurinogueira.springsales.rest.dto.CredentialsDTO;
 import br.net.yurinogueira.springsales.rest.dto.SystemUserDTO;
+import br.net.yurinogueira.springsales.rest.dto.TokenCheckDTO;
 import br.net.yurinogueira.springsales.rest.dto.TokenDTO;
 import br.net.yurinogueira.springsales.security.jwt.JWTService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,17 @@ public class SystemUserController {
     
     private final PasswordEncoder encoder;
     private final JWTService jwtService;
+
+    @PostMapping("check/")
+    @ResponseStatus(HttpStatus.OK)
+    public TokenCheckDTO verify(@RequestBody @Valid TokenCheckDTO tokenCheckDTO) {
+        String[] tokenSplited = tokenCheckDTO.getToken().split(" ");
+        if (tokenSplited.length > 1 && jwtService.isValidToken(tokenSplited[1])) {
+            return tokenCheckDTO;
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Token inválido");
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
