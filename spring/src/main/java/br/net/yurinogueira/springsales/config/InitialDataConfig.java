@@ -34,7 +34,7 @@ public class InitialDataConfig {
     @Bean
     public CommandLineRunner startData() {
         return args -> {
-            final String adminLogin = "admin";
+            final String adminLogin = "admin@email.com";
             final String adminPassword = encoder.encode("admin");
 
             if (userService.existsByLogin(adminLogin)) return;
@@ -46,7 +46,7 @@ public class InitialDataConfig {
             roleRepository.save(userRole);
 
             Client client = Client.builder()
-                        .name("Admin")
+                        .name("Admin Central")
                         .document("95414627070")
                         .build();
 

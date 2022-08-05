@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",
+    "cpf-cnpj-validator": "^1.0.3",
     "element-plus": "^2.1.9",
     "vue": "^3.2.37",
     "vue-router": "^4.1.2"
