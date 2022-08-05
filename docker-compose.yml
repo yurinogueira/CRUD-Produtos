@@ -30,6 +30,20 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
 
+  crud-vue:
+    build:
+      context: .
+      dockerfile: ./docker/vue/Dockerfile
+    image: crud-vue
+    container_name: crud-vue
+    ports:
+      - "8080:80"
+    depends_on:
+      - crud-postgres
+    networks:
+      - crud-network
+      - crud-proxy-network
+
 networks:
   crud-proxy-network:
     name: crud-proxy-network

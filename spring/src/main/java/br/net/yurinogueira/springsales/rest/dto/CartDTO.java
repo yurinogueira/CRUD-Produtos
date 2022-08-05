@@ -15,6 +15,7 @@ public class CartDTO {
 
     @NotNull(message = "{error.client.code-needed}")
     private Integer client;
+
     @NotEmptyList(message = "{error.cart.items-needed}")
     private List<ItemDTO> items;
 
