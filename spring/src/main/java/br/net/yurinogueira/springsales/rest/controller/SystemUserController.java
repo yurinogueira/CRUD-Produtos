@@ -1,6 +1,10 @@
 package br.net.yurinogueira.springsales.rest.controller;
 
+import br.net.yurinogueira.springsales.domain.entity.Client;
+import br.net.yurinogueira.springsales.domain.entity.Role;
 import br.net.yurinogueira.springsales.domain.entity.SystemUser;
+import br.net.yurinogueira.springsales.domain.service.ClientService;
+import br.net.yurinogueira.springsales.domain.service.RoleService;
 import br.net.yurinogueira.springsales.domain.service.impl.UserServiceImpl;
 import br.net.yurinogueira.springsales.rest.dto.CredentialsDTO;
 import br.net.yurinogueira.springsales.rest.dto.SystemUserDTO;
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 @RestController
@@ -24,26 +30,45 @@ import javax.validation.Valid;
 public class SystemUserController {
 
     private final UserServiceImpl userService;
+    private final ClientService clientService;
+    private final RoleService roleService;
+    
     private final PasswordEncoder encoder;
     private final JWTService jwtService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SystemUserDTO create(@RequestBody @Valid SystemUser user) {
+    public TokenDTO create(@RequestBody @Valid SystemUserDTO user) {
         if (userService.existsByLogin(user.getLogin())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já cadastrado");
         }
 
-        String encryptedPassword = encoder.encode(user.getPassword());
-        user.setPassword(encryptedPassword);
-        userService.save(user);
+        Role role = roleService.get("USER");
 
-        return SystemUserDTO
-                .builder()
-                .id(user.getId())
-                .login(user.getLogin())
-                .roles(user.getRoles())
+        Client client = Client.builder()
+                .name(user.getName())
+                .document(user.getDocument())
                 .build();
+        clientService.save(client);
+
+        String encryptedPassword = encoder.encode(user.getPassword());
+        SystemUser systemUser = SystemUser.builder()
+                .login(user.getLogin())
+                .password(encryptedPassword)
+                .client(client)
+                .roles(List.of(role))
+                .build();
+        
+        userService.save(systemUser);
+
+        String token = jwtService.encodeToken(systemUser);
+
+        return new TokenDTO(
+            systemUser.getLogin(),
+            token,
+            systemUser.getRoles(),
+            systemUser.getClient().getId()
+        );
     }
 
     @PostMapping("auth/")
