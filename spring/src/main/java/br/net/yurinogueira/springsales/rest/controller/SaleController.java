@@ -1,6 +1,7 @@
 package br.net.yurinogueira.springsales.rest.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -20,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.net.yurinogueira.springsales.domain.entity.Sale;
 import br.net.yurinogueira.springsales.domain.service.SaleService;
+import br.net.yurinogueira.springsales.rest.dto.SaleInfoDTO;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,19 +33,19 @@ public class SaleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Sale create(@RequestBody @Valid Sale sale) {
+    public SaleInfoDTO create(@RequestBody @Valid Sale sale) {
         service.save(sale);
-        return sale;
+        return getSaleInfoDTO(sale);
     }
 
     @GetMapping("{id}/")
-    public Sale read(@PathVariable Integer id) {
+    public SaleInfoDTO read(@PathVariable Integer id) {
         Sale sale = service.get(id);
         if (sale == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        return sale;
+        return getSaleInfoDTO(sale);
     }
 
     @PutMapping("{id}/")
@@ -70,13 +72,25 @@ public class SaleController {
     }
 
     @GetMapping
-    public List<Sale> list(Sale filter) {
+    public List<SaleInfoDTO> list(Sale filter) {
         ExampleMatcher matcher = ExampleMatcher
                 .matching()
                 .withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Sale> example = Example.of(filter, matcher);
 
-        return service.search(example);
+        List<Sale> sales = service.search(example);
+        return sales.stream().map(sale -> getSaleInfoDTO(sale)).collect(Collectors.toList());
+    }
+
+    private SaleInfoDTO getSaleInfoDTO(Sale sale) {
+        return SaleInfoDTO.builder()
+                .id(sale.getId())
+                .description(sale.getDescription())
+                .type(sale.getType())
+                .saleCheckAmount(sale.getSaleCheckAmount())
+                .saleAmount(sale.getSaleAmount())
+                .salePrice(sale.getSalePrice())
+                .build();
     }
 }

@@ -12,7 +12,11 @@
       </el-menu>
     </el-col>
     <el-col :span="20" :xs="{ span: 16 }">
-      <cart-component v-if="cart"></cart-component>
+      <cart-component :cartId="1" v-if="cart"></cart-component>
+      <product-component
+        :productsData="productsDataC"
+        v-if="products"
+      ></product-component>
     </el-col>
   </el-row>
 </template>
@@ -21,24 +25,32 @@
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import CartComponent from "../components/CartComponent.vue";
+import ProductComponent from "../components/ProductComponent.vue";
 
 export default {
   name: "HomeView",
 
   components: {
     CartComponent,
+    ProductComponent,
   },
 
   data() {
     return {
       activeIndex: ref("1"),
       components: [true, false, false],
+      tableData: [],
+      productsData: [],
       userDTO: {},
       client: {},
     };
   },
 
   computed: {
+    productsDataC() {
+      return this.productsData;
+    },
+
     cart() {
       return this.components[0];
     },
@@ -96,13 +108,40 @@ export default {
       ElMessage.error("Sua sessão expirou, entre novamente por favor.");
     },
 
-    handleSelect(key, keyPath) {
+    async handleSelect(key, keyPath) {
       console.log(key, keyPath);
       const index = parseInt(key) - 1;
+      await this.loadProducts();
 
       for (let i = 0; i <= 3; i++) {
         this.components[i] = i === index;
       }
+    },
+
+    async loadProducts() {
+      const self = this;
+      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+      const userToken = `Bearer ${userDTO.token}`;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: userToken,
+      };
+
+      await fetch(`http://localhost:8000/api/product/`, {
+        headers,
+      }).then(async (response) => {
+        if (response.ok) {
+          const data = await response.json();
+          self.productsData = data;
+          self.productsData.forEach((product) => {
+            if (!product.sale) {
+              product.sale = "Sem promoção";
+            } else {
+              product.sale = product.sale.description;
+            }
+          });
+        }
+      });
     },
   },
 };

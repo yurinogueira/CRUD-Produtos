@@ -5,6 +5,8 @@ import br.net.yurinogueira.springsales.domain.entity.Sale;
 import br.net.yurinogueira.springsales.domain.service.ProductService;
 import br.net.yurinogueira.springsales.domain.service.SaleService;
 import br.net.yurinogueira.springsales.rest.dto.ProductDTO;
+import br.net.yurinogueira.springsales.rest.dto.ProductInfoDTO;
+import br.net.yurinogueira.springsales.rest.dto.SaleInfoDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -22,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/product/")
@@ -33,34 +36,35 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Product create(@RequestBody @Valid ProductDTO productBase) {
+    public ProductInfoDTO create(@RequestBody @Valid ProductDTO productBase) {
         Sale sale = null;
         if (productBase.getSale() != null) {
-            saleService.get(productBase.getSale());
+            sale = saleService.get(productBase.getSale());
             if (sale == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
         }
 
         Product product = Product.builder()
-            .name(productBase.getName())
-            .description(productBase.getDescription())
-            .basePrice(productBase.getPrice())
-            .sale(sale)
-            .build();
+                .name(productBase.getName())
+                .description(productBase.getDescription())
+                .basePrice(productBase.getPrice())
+                .sale(sale)
+                .build();
 
         productService.save(product);
-        return product;
+
+        return getProductInfoDTO(product);
     }
 
     @GetMapping("{id}/")
-    public Product read(@PathVariable Integer id) {
+    public ProductInfoDTO read(@PathVariable Integer id) {
         Product product = productService.get(id);
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        return product;
+        return getProductInfoDTO(product);
     }
 
     @PutMapping("{id}/")
@@ -73,7 +77,7 @@ public class ProductController {
 
         Sale sale = null;
         if (productBase.getSale() != null) {
-            saleService.get(productBase.getSale());
+            sale = saleService.get(productBase.getSale());
             if (sale == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
@@ -101,14 +105,41 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> list(Product filter) {
+    public List<ProductInfoDTO> list(Product filter) {
         ExampleMatcher matcher = ExampleMatcher
                 .matching()
                 .withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Product> example = Example.of(filter, matcher);
+        
+        List<Product> products = productService.search(example);
 
-        return productService.search(example);
+        return products.stream().map(
+            product -> getProductInfoDTO(product)
+        ).collect(Collectors.toList());
+    }
+
+    private ProductInfoDTO getProductInfoDTO(Product product) {
+        SaleInfoDTO saleInfoDTO = null;
+        if (product.getSale() != null) {
+            Sale sale = product.getSale();
+            saleInfoDTO = SaleInfoDTO.builder()
+                    .id(sale.getId())
+                    .description(sale.getDescription())
+                    .type(sale.getType())
+                    .saleCheckAmount(sale.getSaleCheckAmount())
+                    .saleAmount(sale.getSaleAmount())
+                    .salePrice(sale.getSalePrice())
+                    .build();
+        }
+
+        return ProductInfoDTO.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getBasePrice())
+                .sale(saleInfoDTO)
+                .build();
     }
 
 }

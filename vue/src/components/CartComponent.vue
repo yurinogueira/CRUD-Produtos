@@ -15,5 +15,32 @@
 import { defineComponent } from "vue";
 export default defineComponent({
   name: "CartComponent",
-})
+
+  props: ["cartId"],
+
+  data() {
+    return {
+      table: [],
+    };
+  },
+
+  computed: {
+    tableData() {
+      return this.table;
+    },
+  },
+
+  async created() {
+    this.table = [
+      {
+        name: "Debug",
+        amount: 1,
+        description: "oláaa  sadas",
+        price: "124,23",
+        sale: "2 por 2",
+        totalPrice: "124,23",
+      },
+    ];
+  },
+});
 </script>

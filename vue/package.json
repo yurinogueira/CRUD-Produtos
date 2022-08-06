@@ -10,8 +10,12 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.6",
+    "@sideway/address": "^5.0.0",
+    "@sideway/formula": "^3.0.0",
+    "@sideway/pinpoint": "^2.0.0",
     "cpf-cnpj-validator": "^1.0.3",
     "element-plus": "^2.1.9",
+    "joi": "^17.6.0",
     "vue": "^3.2.37",
     "vue-router": "^4.1.2"
   },
