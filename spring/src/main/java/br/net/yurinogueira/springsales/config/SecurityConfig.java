@@ -41,13 +41,28 @@ public class SecurityConfig {
                 return configuration;
             }).and()
             .authorizeRequests()
-                .antMatchers("/api/client/**")
+                // Client USER routers
+                .antMatchers(HttpMethod.GET, "/api/client/")
                     .hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/client/")
+                    .hasAnyRole("USER", "ADMIN")
+                // Client ADMIN routers
+                .antMatchers("/api/client/admin/**")
+                    .hasAnyRole("ADMIN")
+                // Product USER Routers
+                .antMatchers(HttpMethod.GET, "/api/product/**")
+                    .hasAnyRole("USER", "ADMIN")
+                // Product ADMIN Routers
                 .antMatchers("/api/product/**")
                     .hasAnyRole("ADMIN")
+                // Sale ADMIN Routers
+                .antMatchers("/api/sale/**")
+                    .hasAnyRole("ADMIN")
+                // Cart USER Routers
                 .antMatchers("/api/cart/**")
                     .hasAnyRole("USER", "ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/user/**")
+                // User USER Routers
+                .antMatchers("/api/user/**")
                     .permitAll()
             .and()
                 .sessionManagement()

@@ -1,11 +1,15 @@
 package br.net.yurinogueira.springsales.rest.controller;
 
 import br.net.yurinogueira.springsales.domain.entity.Client;
+import br.net.yurinogueira.springsales.domain.entity.SystemUser;
 import br.net.yurinogueira.springsales.domain.service.ClientService;
+import br.net.yurinogueira.springsales.domain.service.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,18 +29,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClientController {
 
-    private final ClientService service;
+    private final ClientService clientService;
+    private final UserServiceImpl userService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Client create(@RequestBody @Valid Client client) {
-        service.save(client);
-        return client;
-    }
+    @GetMapping()
+    public Client read(@AuthenticationPrincipal User userDetail) {
+        String login = userDetail.getUsername();
+        SystemUser user = userService.get(login);
 
-    @GetMapping("{id}/")
-    public Client read(@PathVariable Integer id) {
-        Client client = service.get(id);
+        Client client =  user.getClient();
         if (client == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -44,30 +45,52 @@ public class ClientController {
         return client;
     }
 
-    @PutMapping("{id}/")
+    @PutMapping()
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Integer id, @RequestBody @Valid Client client) {
-        Client nativeClient = service.get(id);
-        if (client == null) {
+    public void update(@AuthenticationPrincipal User userDetail, @RequestBody @Valid Client client) {
+        String login = userDetail.getUsername();
+        SystemUser user = userService.get(login);
+
+        Client nativeClient =  user.getClient();
+        if (nativeClient == null || client == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         client.setId(nativeClient.getId());
-        service.save(client);
+        clientService.save(client);
     }
 
-    @DeleteMapping("{id}/")
+    @PostMapping("admin/")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Client create(@RequestBody @Valid Client client) {
+        clientService.save(client);
+        return client;
+    }
+
+    @DeleteMapping("admin/{id}/")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Integer id) {
-        Client client = service.get(id);
+        Client client = clientService.get(id);
         if (client == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        service.delete(id);
+        clientService.delete(id);
     }
 
-    @GetMapping
+    @PutMapping("admin/{id}/")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void update(@PathVariable Integer id, @RequestBody @Valid Client client) {
+        Client nativeClient =  clientService.get(id);
+        if (nativeClient == null || client == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        client.setId(nativeClient.getId());
+        clientService.save(client);
+    }
+
+    @GetMapping("admin/list/")
     public List<Client> list(Client filter) {
         ExampleMatcher matcher = ExampleMatcher
                 .matching()
@@ -75,7 +98,7 @@ public class ClientController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Client> example = Example.of(filter, matcher);
 
-        return service.search(example);
+        return clientService.search(example);
     }
 
 }
