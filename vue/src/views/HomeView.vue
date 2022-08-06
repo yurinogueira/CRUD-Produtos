@@ -6,8 +6,8 @@
         mode="vertical"
         @select="handleSelect"
       >
-        <el-menu-item index="1">Início</el-menu-item>
-        <el-menu-item index="2">Produtos</el-menu-item>
+        <el-menu-item index="1">Carrinho</el-menu-item>
+        <el-menu-item index="2">Histórico</el-menu-item>
         <el-menu-item index="3">Promoções</el-menu-item>
       </el-menu>
     </el-col>

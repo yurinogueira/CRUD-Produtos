@@ -1,12 +1,12 @@
 package br.net.yurinogueira.springsales.domain.service;
 
-import br.net.yurinogueira.springsales.domain.entity.Cart;
 import br.net.yurinogueira.springsales.domain.entity.Client;
-import br.net.yurinogueira.springsales.domain.entity.Item;
 import br.net.yurinogueira.springsales.domain.entity.Product;
 import br.net.yurinogueira.springsales.rest.dto.CartDTO;
 import br.net.yurinogueira.springsales.rest.dto.CartInfoDTO;
 import br.net.yurinogueira.springsales.rest.dto.ItemDTO;
+import br.net.yurinogueira.springsales.rest.dto.ItemInfoDTO;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,13 +48,13 @@ class CartServiceTest {
         cartDTO.setClient(client.getId());
         cartDTO.setItems(List.of(itemDTO));
 
-        Cart cart = cartService.save(cartDTO);
-        List<Item> items = cart.getItems();
-        Item item = items.get(0);
+        CartInfoDTO cart = cartService.save(cartDTO);
+        List<ItemInfoDTO> items = cart.getItems();
+        ItemInfoDTO item = items.get(0);
 
         Assertions.assertEquals(1, items.size());
-        Assertions.assertEquals(product.getName(), item.getProduct().getName());
-        Assertions.assertEquals(client.getName(), cart.getClient().getName());
+        Assertions.assertEquals(product.getName(), item.getName());
+        Assertions.assertEquals(client.getName(), cart.getClientName());
     }
 
     @Test
@@ -78,8 +78,7 @@ class CartServiceTest {
         cartDTO.setClient(client.getId());
         cartDTO.setItems(List.of(itemDTO));
 
-        Cart cart = cartService.save(cartDTO);
-        CartInfoDTO cartInfoDTO = cartService.get(cart.getId());
+        CartInfoDTO cartInfoDTO = cartService.save(cartDTO);
 
         Assertions.assertEquals("PENDING", cartInfoDTO.getStatus());
         Assertions.assertEquals(client.getName(), cartInfoDTO.getClientName());

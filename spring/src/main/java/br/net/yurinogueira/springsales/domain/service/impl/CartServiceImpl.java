@@ -44,7 +44,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public Cart save(CartDTO dto) {
+    public CartInfoDTO save(CartDTO dto) {
         Integer clientId = dto.getClient();
         Client client = clientRepository
                 .findById(clientId)
@@ -65,7 +65,7 @@ public class CartServiceImpl implements CartService {
 
         cart.setItems(items);
 
-        return cart;
+        return getCartInfoDTO(cart);
     }
 
     @Override

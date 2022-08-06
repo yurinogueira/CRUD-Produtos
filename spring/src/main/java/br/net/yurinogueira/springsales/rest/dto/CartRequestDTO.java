@@ -1,5 +1,6 @@
 package br.net.yurinogueira.springsales.rest.dto;
 
+import br.net.yurinogueira.springsales.annotations.NotEmptyList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CartDTO {
+public class CartRequestDTO {
 
-    private Integer client;
-
+    @NotEmptyList(message = "{error.cart.items-needed}")
     private List<ItemDTO> items;
 
 }
