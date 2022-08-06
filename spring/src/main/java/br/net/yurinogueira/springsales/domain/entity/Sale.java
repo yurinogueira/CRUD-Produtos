@@ -17,7 +17,6 @@ import javax.persistence.Table;
 
 import br.net.yurinogueira.springsales.domain.enums.SaleType;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -50,7 +49,7 @@ public class Sale {
     @Column(name = "sale_amount")
     private Integer saleAmount;
 
-    @Column(name = "sale_price", length = 20, precision = 2)
-    private BigDecimal salePrice;
+    @Column(name = "sale_price")
+    private Double salePrice;
 
 }

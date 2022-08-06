@@ -24,8 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -141,9 +139,9 @@ public class CartServiceImpl implements CartService {
     private CartInfoDTO getCartInfoDTO(Cart cart) {
         List<ItemInfoDTO> items = getItemsInfoDTO(cart.getItems());
 
-        BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO, 2);
+        Double totalPrice = 0.0;
         for (ItemInfoDTO item : items) {
-            totalPrice = totalPrice.add(item.getTotalPrice());
+            totalPrice += item.getTotalPrice();
         }
 
         return CartInfoDTO
@@ -166,8 +164,8 @@ public class CartServiceImpl implements CartService {
         return items.stream().map(item -> {
             Sale sale = item.getProduct().getSale();
             Integer amount = item.getAmount();
-            BigDecimal price = item.getPrice();
-            BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO, 2);
+            Double price = item.getPrice();
+            Double totalPrice = 0.0;
             String saleDescription;
 
             if (sale != null) {
@@ -176,19 +174,16 @@ public class CartServiceImpl implements CartService {
                 saleDescription = sale.getDescription();
                 if (sale.getType() == SaleType.AMOUNT_PER_AMOUNT) {
                     int total = residue + (amountOfSale * sale.getSaleAmount());
-                    BigDecimal totalCost = price.multiply(new BigDecimal(total));
-                    totalPrice = totalPrice.add(totalCost);
+                    totalPrice += (price * total);
                 }
                 else {
-                    BigDecimal totalBaseCost = price.multiply(new BigDecimal(residue));
-                    BigDecimal totalSaleCost = sale.getSalePrice().multiply(new BigDecimal(amountOfSale));
-                    totalPrice = totalPrice.add(totalBaseCost);
-                    totalPrice = totalPrice.add(totalSaleCost);                
+                    Double totalBaseCost = price * residue;
+                    Double totalSaleCost = sale.getSalePrice() * amountOfSale;
+                    totalPrice += (totalBaseCost + totalSaleCost);
                 }
             }
             else {
-                BigDecimal totalCost = price.multiply(new BigDecimal(amount));
-                totalPrice = totalPrice.add(totalCost);
+                totalPrice += (price * amount);
                 saleDescription = "";
             }
 

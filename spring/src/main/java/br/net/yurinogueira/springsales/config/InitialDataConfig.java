@@ -1,6 +1,5 @@
 package br.net.yurinogueira.springsales.config;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -69,7 +68,7 @@ public class InitialDataConfig {
                         .build();
             Sale APPSale = Sale.builder()
                         .saleCheckAmount(3)
-                        .salePrice(BigDecimal.valueOf(10.0))
+                        .salePrice(10.0)
                         .type(SaleType.AMOUNT_PER_PRICE)
                         .description("3 por R$10,00")
                         .build();

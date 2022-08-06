@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @SpringBootTest
@@ -32,7 +31,7 @@ class CartServiceTest {
         Product product = new Product();
         product.setName("Cona-Cola");
         product.setDescription("Cola de Cona");
-        product.setBasePrice(new BigDecimal("20.4"));
+        product.setBasePrice(20.4);
         productService.save(product);
 
         Client client = new Client();
@@ -62,7 +61,7 @@ class CartServiceTest {
         Product product = new Product();
         product.setName("Ruimbrill");
         product.setDescription("Limpador de parabrisa de carro");
-        product.setBasePrice(new BigDecimal("1.5"));
+        product.setBasePrice(1.5);
         productService.save(product);
 
         Client client = new Client();

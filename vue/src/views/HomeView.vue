@@ -6,9 +6,9 @@
         mode="vertical"
         @select="handleSelect"
       >
-        <el-menu-item index="1">Carrinho</el-menu-item>
-        <el-menu-item index="2">Histórico</el-menu-item>
-        <el-menu-item index="3">Promoções</el-menu-item>
+        <el-menu-item index="0">Carrinho</el-menu-item>
+        <el-menu-item index="1">Histórico</el-menu-item>
+        <el-menu-item index="2">Produtos</el-menu-item>
       </el-menu>
     </el-col>
     <el-col :span="20" :xs="{ span: 16 }">
@@ -37,7 +37,7 @@ export default {
 
   data() {
     return {
-      activeIndex: ref("1"),
+      activeIndex: ref("0"),
       components: [true, false, false],
       tableData: [],
       productsData: [],
@@ -55,12 +55,12 @@ export default {
       return this.components[0];
     },
 
-    products() {
+    history() {
       return this.components[1];
     },
 
-    sales() {
-      return this.sales[1];
+    products() {
+      return this.components[2];
     },
   },
 
@@ -68,7 +68,6 @@ export default {
     const self = this;
     const userDTO = JSON.parse(localStorage.getItem("userDTO"));
     if (!userDTO) {
-      console.log("Oiasod");
       this.$router.push({ path: "/" });
       return;
     }
@@ -80,7 +79,7 @@ export default {
     };
     let isValid = false;
 
-    await fetch(`http://localhost:8000/api/client/${userDTO.clientId}/`, {
+    await fetch(`http://localhost:8000/api/client/`, {
       headers,
     })
       .then(async (response) => {
@@ -110,7 +109,7 @@ export default {
 
     async handleSelect(key, keyPath) {
       console.log(key, keyPath);
-      const index = parseInt(key) - 1;
+      const index = parseInt(key);
       await this.loadProducts();
 
       for (let i = 0; i <= 3; i++) {

@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 
 
 @Entity
@@ -38,7 +37,7 @@ public class Item {
     @Column(name = "amount")
     private Integer amount;
 
-    @Column(name = "price", length = 20, precision = 2)
-    private BigDecimal price;
+    @Column(name = "price")
+    private Double price;
 
 }

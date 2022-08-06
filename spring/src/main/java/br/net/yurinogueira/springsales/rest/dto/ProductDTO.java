@@ -1,7 +1,5 @@
 package br.net.yurinogueira.springsales.rest.dto;
 
-import java.math.BigDecimal;
-
 import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
@@ -24,6 +22,6 @@ public class ProductDTO {
     private Integer sale;
 
     @NotNull(message = "{error.product.price-needed}")
-    private BigDecimal price;
+    private Double price;
 
 }

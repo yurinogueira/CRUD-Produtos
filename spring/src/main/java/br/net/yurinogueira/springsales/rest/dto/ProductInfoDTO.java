@@ -1,7 +1,5 @@
 package br.net.yurinogueira.springsales.rest.dto;
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +19,6 @@ public class ProductInfoDTO {
 
     private SaleInfoDTO sale;
 
-    private BigDecimal price;
+    private Double price;
 
 }
