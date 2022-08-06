@@ -19,16 +19,20 @@ body {
   margin: 0;
   background-color: #e2e2e2;
 }
+.router-view {
+  margin: 0;
+}
 .el-header {
+  margin: 0;
   padding: 0;
+  height: 100%;
 }
 .el-footer {
+  margin: 0;
   padding: 0;
 }
 .el-main {
+  margin: 0;
   padding: 0;
-  width: 100%;
-  margin-top: 32px;
-  margin-bottom: 32px;
 }
 </style>

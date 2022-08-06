@@ -159,6 +159,41 @@ export default {
     };
   },
 
+  async created() {
+    const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+    if (!userDTO) {
+      return;
+    }
+
+    const self = this;
+    const userToken = `Bearer ${userDTO.token}`;
+    const headers = { "Content-Type": "application/json" };
+    const payload = JSON.stringify({ token: userToken });
+    let isValid = true;
+
+    await fetch("http://localhost:8000/api/user/check/", {
+      method: "POST",
+      headers: headers,
+      body: payload,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          self.alertExpired();
+          isValid = false;
+          return;
+        }
+      })
+      .catch(() => {
+        self.alertExpired();
+        isValid = false;
+        return;
+      });
+
+    if (isValid) {
+      this.$router.push({ path: "/inicio" });
+    }
+  },
+
   methods: {
     async register() {
       const self = this;

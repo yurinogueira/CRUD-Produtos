@@ -7,7 +7,7 @@ export default defineComponent({
   name: "BaseHeader",
   data() {
     return { logoImg: logo };
-  }
+  },
 });
 </script>
 

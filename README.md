@@ -28,6 +28,8 @@ Protótipo de um CRUD de Produtos feito como parte do processo seletivo da Sitew
 | VueJs                     | 3.2.37  |
 | VueRouter                 | 4.1.2   |
 | ViteJs                    | 3.0.1   |
+| ElementPlus               | 2.1.9   |
+| cpf-cnpj-validator        | 1.0.3   |
 
 ----
 ## Rodando

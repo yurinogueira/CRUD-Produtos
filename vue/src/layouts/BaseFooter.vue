@@ -28,7 +28,6 @@ export default defineComponent({ name: "BaseFooter" });
 <style scoped>
 section {
   background-color: #f1f1f1;
-  margin-top: 32px;
   padding-top: 64px;
   padding-bottom: 64px;
 }

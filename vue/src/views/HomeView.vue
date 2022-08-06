@@ -1,20 +1,55 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <el-row>
+    <el-col :span="4" :xs="{ span: 8 }">
+      <el-menu
+        :default-active="activeIndex"
+        mode="vertical"
+        @select="handleSelect"
+      >
+        <el-menu-item index="1">Início</el-menu-item>
+        <el-menu-item index="2">Produtos</el-menu-item>
+        <el-menu-item index="3">Promoções</el-menu-item>
+      </el-menu>
+    </el-col>
+    <el-col :span="20" :xs="{ span: 16 }">
+      <cart-component v-if="cart"></cart-component>
+    </el-col>
+  </el-row>
 </template>
 
 <script>
+import { ref } from "vue";
 import { ElMessage } from "element-plus";
+import CartComponent from "../components/CartComponent.vue";
 
 export default {
   name: "HomeView",
 
+  components: {
+    CartComponent,
+  },
+
   data() {
     return {
+      activeIndex: ref("1"),
+      components: [true, false, false],
       userDTO: {},
       client: {},
     };
+  },
+
+  computed: {
+    cart() {
+      return this.components[0];
+    },
+
+    products() {
+      return this.components[1];
+    },
+
+    sales() {
+      return this.sales[1];
+    },
   },
 
   async created() {
@@ -60,16 +95,21 @@ export default {
       localStorage.removeItem("userDTO");
       ElMessage.error("Sua sessão expirou, entre novamente por favor.");
     },
+
+    handleSelect(key, keyPath) {
+      console.log(key, keyPath);
+      const index = parseInt(key) - 1;
+
+      for (let i = 0; i <= 3; i++) {
+        this.components[i] = i === index;
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+.el-menu {
+  height: 100%;
 }
 </style>

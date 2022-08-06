@@ -32,7 +32,7 @@ class CartServiceTest {
         Product product = new Product();
         product.setName("Cona-Cola");
         product.setDescription("Cola de Cona");
-        product.setBasePrice(BigDecimal.valueOf(20.4));
+        product.setBasePrice(new BigDecimal("20.4"));
         productService.save(product);
 
         Client client = new Client();
@@ -62,7 +62,7 @@ class CartServiceTest {
         Product product = new Product();
         product.setName("Ruimbrill");
         product.setDescription("Limpador de parabrisa de carro");
-        product.setBasePrice(BigDecimal.valueOf(1.5));
+        product.setBasePrice(new BigDecimal("1.5"));
         productService.save(product);
 
         Client client = new Client();

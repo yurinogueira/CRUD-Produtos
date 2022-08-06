@@ -4,7 +4,9 @@ import br.net.yurinogueira.springsales.domain.entity.Cart;
 import br.net.yurinogueira.springsales.domain.entity.Client;
 import br.net.yurinogueira.springsales.domain.entity.Item;
 import br.net.yurinogueira.springsales.domain.entity.Product;
+import br.net.yurinogueira.springsales.domain.entity.Sale;
 import br.net.yurinogueira.springsales.domain.enums.CartStatus;
+import br.net.yurinogueira.springsales.domain.enums.SaleType;
 import br.net.yurinogueira.springsales.domain.repository.CartRepository;
 import br.net.yurinogueira.springsales.domain.repository.ClientRepository;
 import br.net.yurinogueira.springsales.domain.repository.ItemRepository;
@@ -16,10 +18,14 @@ import br.net.yurinogueira.springsales.rest.dto.CartInfoDTO;
 import br.net.yurinogueira.springsales.rest.dto.ItemDTO;
 import br.net.yurinogueira.springsales.rest.dto.ItemInfoDTO;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -75,6 +81,26 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<CartInfoDTO> search(Integer id) {
+        Client client = clientRepository
+            .findById(id)
+            .orElseThrow(() -> {
+                String errorMessage = "O cliente de código %d não foi encontrado";
+                return new RulesException(String.format(errorMessage, id));
+            });
+        Cart exampleCart = new Cart();
+
+        exampleCart.setClient(client);
+
+        List<Cart> carts = cartRepository.findAll(Example.of(exampleCart));
+
+        return carts.stream().map(
+            (cart) -> getCartInfoDTO(cart)
+        ).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void patch(Integer id, CartStatus status) {
         Optional<Cart> cart = cartRepository.findById(id);
@@ -103,10 +129,10 @@ public class CartServiceImpl implements CartService {
                     });
 
             final Item item = new Item();
+            item.setPrice(product.getBasePrice());
             item.setAmount(dto.getAmount());
             item.setCart(cart);
             item.setProduct(product);
-            item.setPrice(product.getBasePrice());
 
             return item;
         }).collect(Collectors.toList());
@@ -114,6 +140,11 @@ public class CartServiceImpl implements CartService {
 
     private CartInfoDTO getCartInfoDTO(Cart cart) {
         List<ItemInfoDTO> items = getItemsInfoDTO(cart.getItems());
+
+        BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO, 2);
+        for (ItemInfoDTO item : items) {
+            totalPrice = totalPrice.add(item.getTotalPrice());
+        }
 
         return CartInfoDTO
                 .builder()
@@ -123,6 +154,7 @@ public class CartServiceImpl implements CartService {
                 .cartDate(cart.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                 .status(cart.getStatus().name())
                 .items(items)
+                .totalPrice(totalPrice)
                 .build();
     }
 
@@ -131,15 +163,47 @@ public class CartServiceImpl implements CartService {
             return Collections.emptyList();
         }
 
-        return items.stream().map(item ->
-                ItemInfoDTO
-                        .builder()
-                        .amount(item.getAmount())
-                        .name(item.getProduct().getName())
-                        .description(item.getProduct().getDescription())
-                        .unitPrice(item.getProduct().getBasePrice())
-                        .unitPaidPrice(item.getPrice())
-                        .build()
+        return items.stream().map(item -> {
+            Sale sale = item.getProduct().getSale();
+            Integer amount = item.getAmount();
+            BigDecimal price = item.getPrice();
+            BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO, 2);
+            String saleDescription;
+
+            if (sale != null) {
+                int residue = amount % sale.getSaleCheckAmount();
+                int amountOfSale = amount / sale.getSaleCheckAmount();
+                saleDescription = sale.getDescription();
+                if (sale.getType() == SaleType.AMOUNT_PER_AMOUNT) {
+                    int total = residue + (amountOfSale * sale.getSaleAmount());
+                    BigDecimal totalCost = price.multiply(new BigDecimal(total));
+                    totalPrice = totalPrice.add(totalCost);
+                }
+                else {
+                    BigDecimal totalBaseCost = price.multiply(new BigDecimal(residue));
+                    BigDecimal totalSaleCost = sale.getSalePrice().multiply(new BigDecimal(amountOfSale));
+                    totalPrice = totalPrice.add(totalBaseCost);
+                    totalPrice = totalPrice.add(totalSaleCost);                
+                }
+            }
+            else {
+                BigDecimal totalCost = price.multiply(new BigDecimal(amount));
+                totalPrice = totalPrice.add(totalCost);
+                saleDescription = "";
+            }
+
+            ItemInfoDTO itemInfoDTO =  ItemInfoDTO
+                    .builder()
+                    .amount(amount)
+                    .name(item.getProduct().getName())
+                    .description(item.getProduct().getDescription())
+                    .unitPrice(price)
+                    .totalPrice(totalPrice)
+                    .promotionDescription(saleDescription)
+                    .build();
+            return itemInfoDTO;
+        }
+               
         ).collect(Collectors.toList());
     }
 

@@ -15,8 +15,9 @@ public class ItemInfoDTO {
 
     private String name;
     private String description;
-    private BigDecimal unitPaidPrice;
+    private BigDecimal totalPrice;
     private BigDecimal unitPrice;
+    private String promotionDescription;
     private Integer amount;
 
 }

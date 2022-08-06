@@ -18,6 +18,9 @@ LABEL maintainer="yurinogueira@id.uff.br"
 LABEL vendor="Nogueira Tecnologia"
 
 COPY --from=crud-vue-builder /app/dist /usr/share/nginx/html
+COPY ./docker/nginx/prod.conf /temp/prod.conf
+
+RUN envsubst /app < /temp/prod.conf > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
