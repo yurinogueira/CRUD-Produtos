@@ -131,8 +131,13 @@ export default {
       }).then(async (response) => {
         if (response.ok) {
           const data = await response.json();
+          const currentFormatter = new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          });
           self.productsData = data;
           self.productsData.forEach((product) => {
+            product.priceFormated = currentFormatter.format(product.price);
             if (!product.sale) {
               product.sale = "Sem promoção";
             } else {

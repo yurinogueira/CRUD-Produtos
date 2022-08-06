@@ -45,7 +45,7 @@ class ProductServiceTest {
 
     @Test
     void getShouldReturnNull() {
-        Product product = testService.get(10);
+        Product product = testService.get(35);
 
         Assertions.assertNull(product);
     }

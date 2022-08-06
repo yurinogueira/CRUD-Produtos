@@ -1,9 +1,9 @@
 <template>
   <el-scrollbar>
-    <el-table :data="tableData">
+    <el-table v-loading="loading" :data="tableData">
       <el-table-column prop="name" label="Nome" :fit="true" />
       <el-table-column prop="description" label="Descrição" :fit="true" />
-      <el-table-column prop="price" label="Preço" />
+      <el-table-column prop="priceFormated" label="Preço Unitário" />
       <el-table-column prop="sale" label="Promoção" />
       <el-table-column align="right">
         <template #header>
@@ -14,12 +14,17 @@
           />
         </template>
         <template #default="scope">
+          <el-button disabled round type="primary">{{ cartAmount[scope.$index] || 0 }}</el-button>
+          <el-button
+            size="small"
+            type="success"
+            @click="handleAdd(scope.$index)"
+          >+</el-button>
           <el-button
             size="small"
             type="danger"
-            @click="handleDelete(scope.$index, scope.row)"
-            >ADICIONAR AO CARRINHO</el-button
-          >
+            @click="handleRm(scope.$index)"
+          >-</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -36,11 +41,41 @@ export default defineComponent({
 
   data() {
     return {
+      loading: true,
       search: "",
+      cart: {},
     };
   },
 
+  async created() {
+    const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
+    this.cart = actualCart;
+    this.loading = false;
+  },
+
+  methods: {
+    handleAdd(index) {
+      if (!this.cart[index]) {
+        this.cart[index] = 0;
+      }
+      this.cart[index] += 1;
+      localStorage.setItem("actualCart", JSON.stringify(this.cart));
+    },
+
+    handleRm(index) {
+      if (!this.cart[index] || this.cart[index] === 0) {
+        return;
+      }
+      this.cart[index] -= 1;
+      localStorage.setItem("actualCart", JSON.stringify(this.cart));
+    },
+  },
+
   computed: {
+    cartAmount() {
+      return this.cart;
+    },
+
     tableData() {
       return this.productsData.filter(
         (product) =>
