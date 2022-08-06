@@ -35,7 +35,7 @@ public class Sale {
     private Integer id;
 
     @OneToMany(mappedBy = "sale")
-    private List<Product> product;
+    private List<Product> products;
 
     @Column(name = "description", length = 256)
     private String description;

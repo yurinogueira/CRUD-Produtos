@@ -1,7 +1,10 @@
 package br.net.yurinogueira.springsales.rest.controller;
 
 import br.net.yurinogueira.springsales.domain.entity.Product;
+import br.net.yurinogueira.springsales.domain.entity.Sale;
 import br.net.yurinogueira.springsales.domain.service.ProductService;
+import br.net.yurinogueira.springsales.domain.service.SaleService;
+import br.net.yurinogueira.springsales.rest.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -25,18 +28,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductService service;
+    private final ProductService productService;
+    private final SaleService saleService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Product create(@RequestBody @Valid Product product) {
-        service.save(product);
+    public Product create(@RequestBody @Valid ProductDTO productBase) {
+        Sale sale = null;
+        if (productBase.getSale() != null) {
+            saleService.get(productBase.getSale());
+            if (sale == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
+        }
+
+        Product product = Product.builder()
+            .name(productBase.getName())
+            .description(productBase.getDescription())
+            .basePrice(productBase.getPrice())
+            .sale(sale)
+            .build();
+
+        productService.save(product);
         return product;
     }
 
     @GetMapping("{id}/")
     public Product read(@PathVariable Integer id) {
-        Product product = service.get(id);
+        Product product = productService.get(id);
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -46,25 +65,39 @@ public class ProductController {
 
     @PutMapping("{id}/")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Integer id, @RequestBody @Valid Product product) {
-        Product nativeProduct = service.get(id);
+    public void update(@PathVariable Integer id, @RequestBody @Valid ProductDTO productBase) {
+        Product nativeProduct = productService.get(id);
         if (nativeProduct == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        product.setId(nativeProduct.getId());
-        service.save(product);
+        Sale sale = null;
+        if (productBase.getSale() != null) {
+            saleService.get(productBase.getSale());
+            if (sale == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
+        }
+
+        Product updatedProduct = Product.builder()
+            .id(nativeProduct.getId())
+            .name(productBase.getName())
+            .description(productBase.getDescription())
+            .basePrice(productBase.getPrice())
+            .sale(sale)
+            .build();
+        productService.save(updatedProduct);
     }
 
     @DeleteMapping("{id}/")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Integer id) {
-        Product product = service.get(id);
+        Product product = productService.get(id);
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        service.delete(id);
+        productService.delete(id);
     }
 
     @GetMapping
@@ -75,7 +108,7 @@ public class ProductController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Product> example = Example.of(filter, matcher);
 
-        return service.search(example);
+        return productService.search(example);
     }
 
 }
