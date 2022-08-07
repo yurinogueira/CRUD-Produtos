@@ -6,7 +6,11 @@
         mode="vertical"
         @select="handleSelect"
       >
-        <el-menu-item index="0">Carrinho</el-menu-item>
+        <el-menu-item index="0">
+          <el-button class="cart-number" disabled round type="primary">
+            {{ cartSize }} </el-button
+          >Carrinho
+        </el-menu-item>
         <el-menu-item index="1">Histórico</el-menu-item>
         <el-menu-item index="2">Catalogo</el-menu-item>
         <el-menu-item v-if="isAdmin" index="3">Administração</el-menu-item>
@@ -44,9 +48,25 @@ export default {
     return {
       activeIndex: ref("0"),
       components: [true, false, false, false],
+      cartSizeD: 0,
+      timer: null,
       userDTO: {},
       client: {},
     };
+  },
+
+  mounted() {
+    this.timer = setInterval(async () => {
+      this.cartSizeD = 0;
+      const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
+      for (let key in actualCart) {
+        this.cartSizeD += actualCart[key].amount;
+      }
+    }, 500);
+  },
+
+  beforeUnmount() {
+    clearInterval(this.timer);
   },
 
   computed: {
@@ -55,6 +75,10 @@ export default {
         return this.userDTO.roles.includes("ADMIN");
       }
       return false;
+    },
+
+    cartSize() {
+      return this.cartSizeD;
     },
 
     cart() {
@@ -130,6 +154,11 @@ export default {
 </script>
 
 <style scoped>
+.cart-number {
+  width: 8px;
+  margin-right: 4px;
+  height: 16px;
+}
 .el-menu {
   height: 100%;
 }
