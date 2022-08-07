@@ -26,7 +26,9 @@
         </el-button>
       </el-col>
       <el-col :span="4">
-        <el-button type="primary">FINALIZAR PEDIDO!</el-button>
+        <el-button type="primary" @click="finishRequest()">
+          FINALIZAR PEDIDO!
+        </el-button>
       </el-col>
     </el-row>
   </el-scrollbar>
@@ -34,6 +36,8 @@
 
 <script>
 import { defineComponent } from "vue";
+import { ElMessage } from "element-plus";
+
 export default defineComponent({
   name: "CartComponent",
 
@@ -68,6 +72,39 @@ export default defineComponent({
   },
 
   methods: {
+    async finishRequest() {
+      if (!(this.cartsData.length > 0)) {
+        ElMessage.error(
+          "O carrinho não pode estar vazio para finalizar o pedido."
+        );
+        return;
+      }
+
+      this.loading = true;
+      const items = this.getItems();
+      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+      const userToken = `Bearer ${userDTO.token}`;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: userToken,
+      };
+      const payload = JSON.stringify({ items });
+
+      await fetch(`http://localhost:8000/api/cart/`, {
+        method: "POST",
+        headers: headers,
+        body: payload,
+      }).then(async (response) => {
+        if (response.ok) {
+          ElMessage.success("Pedido registrado com sucesso!");
+          this.cart = {};
+          this.cartPrice = 0;
+          localStorage.setItem("actualCart", JSON.stringify(this.cart));
+        }
+      });
+      this.loading = false;
+    },
+
     async handleAdd(row) {
       this.loading = true;
       const index = row.id;
@@ -94,7 +131,7 @@ export default defineComponent({
       this.loading = false;
     },
 
-    async getCartTotalPrice() {
+    getItems() {
       let listItems = [];
       for (let key in this.cart) {
         listItems.push({
@@ -102,7 +139,11 @@ export default defineComponent({
           amount: this.cart[key].amount,
         });
       }
+      return listItems;
+    },
 
+    async getCartTotalPrice() {
+      const listItems = this.getItems();
       const userDTO = JSON.parse(localStorage.getItem("userDTO"));
       const userToken = `Bearer ${userDTO.token}`;
       const headers = {
