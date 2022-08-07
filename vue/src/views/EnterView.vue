@@ -128,7 +128,6 @@ export default {
       let isValid = await form.validate((valid, fields) => {
         if (!valid) {
           self.loading = false;
-          console.log(fields);
           ElMessage({
             message: "Preencha todos os campos corretamente.",
             type: "warning",
@@ -136,6 +135,10 @@ export default {
         }
         return valid;
       });
+
+      if (!isValid) {
+        return;
+      }
 
       const headers = { "Content-Type": "application/json" };
       const payload = JSON.stringify({
