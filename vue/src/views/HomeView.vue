@@ -10,6 +10,7 @@
         <el-menu-item index="1">Histórico</el-menu-item>
         <el-menu-item index="2">Catalogo</el-menu-item>
         <el-menu-item v-if="isAdmin" index="3">Administração</el-menu-item>
+        <el-menu-item index="4">SAIR</el-menu-item>
       </el-menu>
     </el-col>
     <el-col :span="20" :xs="{ span: 16 }">
@@ -70,7 +71,7 @@ export default {
 
     adminEdit() {
       return this.components[3];
-    }
+    },
   },
 
   async created() {
@@ -114,6 +115,11 @@ export default {
 
     handleSelect(key) {
       const index = parseInt(key);
+      if (index === 4) {
+        localStorage.clear();
+        ElMessage.success("Volte logo!");
+        this.$router.push({ path: "/" });
+      }
 
       for (let i = 0; i <= 4; i++) {
         this.components[i] = i === index;

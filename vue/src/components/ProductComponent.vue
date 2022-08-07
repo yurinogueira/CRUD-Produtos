@@ -86,6 +86,7 @@ export default defineComponent({
               product.sale = product.sale.description;
             }
           });
+          self.productsData.reverse();
         }
       });
     },

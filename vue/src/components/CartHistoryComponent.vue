@@ -45,7 +45,7 @@ export default defineComponent({
     return {
       cartHistory: [],
       loading: true,
-    }
+    };
   },
 
   computed: {
