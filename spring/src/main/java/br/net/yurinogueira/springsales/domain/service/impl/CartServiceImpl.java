@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +52,7 @@ public class CartServiceImpl implements CartService {
                 });
 
         Cart cart = new Cart();
-        cart.setDate(LocalDate.now());
+        cart.setDate(LocalDateTime.now());
         cart.setClient(client);
         cart.setStatus(CartStatus.PENDING);
 
@@ -149,7 +149,7 @@ public class CartServiceImpl implements CartService {
                 .id(cart.getId())
                 .clientName(cart.getClient().getName())
                 .clientDocument(cart.getClient().getDocument())
-                .cartDate(cart.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                .cartDate(cart.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
                 .status(cart.getStatus().name())
                 .items(items)
                 .totalPrice(totalPrice)

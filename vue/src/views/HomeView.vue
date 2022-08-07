@@ -12,7 +12,11 @@
       </el-menu>
     </el-col>
     <el-col :span="20" :xs="{ span: 16 }">
-      <cart-component :cartId="1" v-if="cart"></cart-component>
+      <cart-component v-if="cart"></cart-component>
+      <cart-history-component
+        :cartHistory="cartsDataC"
+        v-if="history"
+      ></cart-history-component>
       <product-component
         :productsData="productsDataC"
         v-if="products"
@@ -25,6 +29,7 @@
 import { ref } from "vue";
 import { ElMessage } from "element-plus";
 import CartComponent from "../components/CartComponent.vue";
+import CartHistoryComponent from "../components/CartHistoryComponent.vue";
 import ProductComponent from "../components/ProductComponent.vue";
 
 export default {
@@ -32,6 +37,7 @@ export default {
 
   components: {
     CartComponent,
+    CartHistoryComponent,
     ProductComponent,
   },
 
@@ -41,12 +47,17 @@ export default {
       components: [true, false, false],
       tableData: [],
       productsData: [],
+      cartsData: [],
       userDTO: {},
       client: {},
     };
   },
 
   computed: {
+    cartsDataC() {
+      return this.cartsData;
+    },
+
     productsDataC() {
       return this.productsData;
     },
@@ -67,12 +78,7 @@ export default {
   async created() {
     const self = this;
     const userDTO = JSON.parse(localStorage.getItem("userDTO"));
-    if (!userDTO) {
-      this.$router.push({ path: "/" });
-      return;
-    }
-
-    const userToken = `Bearer ${userDTO.token}`;
+    const userToken = `Bearer ${userDTO?.token}`;
     const headers = {
       "Content-Type": "application/json",
       Authorization: userToken,
@@ -111,10 +117,47 @@ export default {
       console.log(key, keyPath);
       const index = parseInt(key);
       await this.loadProducts();
+      await this.loadCarts();
 
       for (let i = 0; i <= 3; i++) {
         this.components[i] = i === index;
       }
+    },
+
+    async loadCarts() {
+      const self = this;
+      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+      const userToken = `Bearer ${userDTO.token}`;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: userToken,
+      };
+
+      await fetch(`http://localhost:8000/api/cart/list/`, {
+        headers,
+      }).then(async (response) => {
+        if (response.ok) {
+          const data = await response.json();
+          const currentFormatter = new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          });
+          self.cartsData = data;
+          self.cartsData.forEach((cart) => {
+            cart.totalPriceFormated = currentFormatter.format(cart.totalPrice);
+            cart.items.forEach((item) => {
+              item.unitPriceFormated = currentFormatter.format(item.unitPrice);
+              item.totalPriceFormated = currentFormatter.format(
+                item.totalPrice
+              );
+              if (!item.promotionDescription) {
+                item.promotionDescription = "Sem promoção";
+              }
+            });
+          });
+          self.cartsData.reverse();
+        }
+      });
     },
 
     async loadProducts() {

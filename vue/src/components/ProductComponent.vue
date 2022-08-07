@@ -14,17 +14,15 @@
           />
         </template>
         <template #default="scope">
-          <el-button disabled round type="primary">{{ cartAmount[scope.$index] || 0 }}</el-button>
-          <el-button
-            size="small"
-            type="success"
-            @click="handleAdd(scope.$index)"
-          >+</el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleRm(scope.$index)"
-          >-</el-button>
+          <el-button disabled round type="primary">
+            {{ cartAmount[scope.row.id] || 0 }}
+          </el-button>
+          <el-button size="small" type="success" @click="handleAdd(scope.row)">
+            +
+          </el-button>
+          <el-button size="small" type="danger" @click="handleRm(scope.row)">
+            -
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -54,7 +52,8 @@ export default defineComponent({
   },
 
   methods: {
-    handleAdd(index) {
+    handleAdd(row) {
+      const index = row.id;
       if (!this.cart[index]) {
         this.cart[index] = 0;
       }
@@ -62,7 +61,8 @@ export default defineComponent({
       localStorage.setItem("actualCart", JSON.stringify(this.cart));
     },
 
-    handleRm(index) {
+    handleRm(row) {
+      const index = row.id;
       if (!this.cart[index] || this.cart[index] === 0) {
         return;
       }

@@ -8,18 +8,35 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: EnterView,
+      meta: { requiresAuth: false },
     },
     {
       path: "/cadastro",
       name: "cadastro",
       component: () => import("../views/RegisterView.vue"),
+      meta: { requiresAuth: false },
     },
     {
       path: "/inicio",
       name: "inicio",
       component: () => import("../views/HomeView.vue"),
+      meta: { requiresAuth: true },
     },
   ],
+});
+
+router.beforeEach((to, _, next) => {
+  const requiresAuth = to.meta.requiresAuth;
+  const userDTO = JSON.parse(localStorage.getItem("userDTO"))?.token;
+  if (requiresAuth && !userDTO) {
+    return next({ path: "/" });
+  }
+
+  if (!requiresAuth && userDTO) {
+    return next({ path: "/inicio" });
+  }
+
+  next();
 });
 
 export default router;

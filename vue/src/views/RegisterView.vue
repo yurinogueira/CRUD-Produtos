@@ -160,13 +160,9 @@ export default {
   },
 
   async created() {
-    const userDTO = JSON.parse(localStorage.getItem("userDTO"));
-    if (!userDTO) {
-      return;
-    }
-
     const self = this;
-    const userToken = `Bearer ${userDTO.token}`;
+    const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+    const userToken = `Bearer ${userDTO?.token}`;
     const headers = { "Content-Type": "application/json" };
     const payload = JSON.stringify({ token: userToken });
     let isValid = true;
