@@ -61,6 +61,7 @@ Para rodar o protótipo segue abaixo os comandos.
 ### Front-End
 |          Tecnologia       | Versão  |
 | :---                      |    ---: |
+| Javascript                | ES6     |
 | VueJs                     | 3.2.37  |
 | VueRouter                 | 4.1.2   |
 | ViteJs                    | 3.0.1   |
