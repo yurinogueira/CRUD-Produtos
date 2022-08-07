@@ -2,6 +2,8 @@
 
 Protótipo de um CRUD de Produtos feito como parte do processo seletivo da Siteware.
 
+![CRUD Produtos](images/admin_painel_administracao_editar_produto.png)
+
 ### Como usar
 Após subir o projeto, você pode criar uma conta para você pelo próprio
 site, porém essa conta só irá possuir as permissões de usuário,
