@@ -1,5 +1,8 @@
 <template>
-  <el-scrollbar>
+  <el-card v-loading="loading">
+    <template #header>
+      <span class="card-title">Histórico de Pedidos</span>
+    </template>
     <el-collapse accordion>
       <el-collapse-item
         v-for="cart in cartsData"
@@ -29,15 +32,21 @@
         </el-row>
       </el-collapse-item>
     </el-collapse>
-  </el-scrollbar>
+  </el-card>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+
 export default defineComponent({
   name: "CartHistoryComponent",
 
-  props: ["cartHistory"],
+  data() {
+    return {
+      cartHistory: [],
+      loading: true,
+    }
+  },
 
   computed: {
     cartsData() {
@@ -45,13 +54,55 @@ export default defineComponent({
     },
   },
 
-  async created() {
-    if (!this.cartHistory) {
-      this.cartHistory == [];
-    }
+  created() {
+    this.loadData();
   },
 
   methods: {
+    async loadData() {
+      await this.loadCarts();
+      if (!this.cartHistory) {
+        this.cartHistory == [];
+      }
+      this.loading = false;
+    },
+
+    async loadCarts() {
+      const self = this;
+      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+      const userToken = `Bearer ${userDTO.token}`;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: userToken,
+      };
+
+      await fetch(`http://localhost:8000/api/cart/list/`, {
+        headers,
+      }).then(async (response) => {
+        if (response.ok) {
+          const data = await response.json();
+          const currentFormatter = new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          });
+          self.cartHistory = data;
+          self.cartHistory.forEach((cart) => {
+            cart.totalPriceFormated = currentFormatter.format(cart.totalPrice);
+            cart.items.forEach((item) => {
+              item.unitPriceFormated = currentFormatter.format(item.unitPrice);
+              item.totalPriceFormated = currentFormatter.format(
+                item.totalPrice
+              );
+              if (!item.promotionDescription) {
+                item.promotionDescription = "Sem promoção";
+              }
+            });
+          });
+          self.cartHistory.reverse();
+        }
+      });
+    },
+
     formatCpf(value) {
       return value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     },
@@ -66,10 +117,6 @@ span {
 }
 .el-row {
   padding: 0;
-}
-.el-card {
-  width: 95%;
-  box-shadow: 0 0;
 }
 .card-header {
   display: flex;

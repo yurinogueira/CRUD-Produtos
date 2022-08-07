@@ -8,19 +8,15 @@
       >
         <el-menu-item index="0">Carrinho</el-menu-item>
         <el-menu-item index="1">Histórico</el-menu-item>
-        <el-menu-item index="2">Produtos</el-menu-item>
+        <el-menu-item index="2">Catalogo</el-menu-item>
+        <el-menu-item v-if="isAdmin" index="3">Administração</el-menu-item>
       </el-menu>
     </el-col>
     <el-col :span="20" :xs="{ span: 16 }">
       <cart-component v-if="cart"></cart-component>
-      <cart-history-component
-        :cartHistory="cartsDataC"
-        v-if="history"
-      ></cart-history-component>
-      <product-component
-        :productsData="productsDataC"
-        v-if="products"
-      ></product-component>
+      <cart-history-component v-if="history"></cart-history-component>
+      <product-component v-if="products"></product-component>
+      <admin-product-component v-if="adminEdit"></admin-product-component>
     </el-col>
   </el-row>
 </template>
@@ -31,6 +27,7 @@ import { ElMessage } from "element-plus";
 import CartComponent from "../components/CartComponent.vue";
 import CartHistoryComponent from "../components/CartHistoryComponent.vue";
 import ProductComponent from "../components/ProductComponent.vue";
+import AdminProductComponent from "../components/AdminProductComponent.vue";
 
 export default {
   name: "HomeView",
@@ -39,26 +36,24 @@ export default {
     CartComponent,
     CartHistoryComponent,
     ProductComponent,
+    AdminProductComponent,
   },
 
   data() {
     return {
       activeIndex: ref("0"),
-      components: [true, false, false],
-      productsData: [],
-      cartsData: [],
+      components: [true, false, false, false],
       userDTO: {},
       client: {},
     };
   },
 
   computed: {
-    cartsDataC() {
-      return this.cartsData;
-    },
-
-    productsDataC() {
-      return this.productsData;
+    isAdmin() {
+      if (this.userDTO?.roles) {
+        return this.userDTO.roles.includes("ADMIN");
+      }
+      return false;
     },
 
     cart() {
@@ -72,11 +67,16 @@ export default {
     products() {
       return this.components[2];
     },
+
+    adminEdit() {
+      return this.components[3];
+    }
   },
 
   async created() {
     const self = this;
     const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+    this.userDTO = userDTO;
     const userToken = `Bearer ${userDTO?.token}`;
     const headers = {
       "Content-Type": "application/json",
@@ -112,82 +112,12 @@ export default {
       ElMessage.error("Sua sessão expirou, entre novamente por favor.");
     },
 
-    async handleSelect(key, keyPath) {
-      console.log(key, keyPath);
+    handleSelect(key) {
       const index = parseInt(key);
-      await this.loadProducts();
-      await this.loadCarts();
 
-      for (let i = 0; i <= 3; i++) {
+      for (let i = 0; i <= 4; i++) {
         this.components[i] = i === index;
       }
-    },
-
-    async loadCarts() {
-      const self = this;
-      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
-      const userToken = `Bearer ${userDTO.token}`;
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: userToken,
-      };
-
-      await fetch(`http://localhost:8000/api/cart/list/`, {
-        headers,
-      }).then(async (response) => {
-        if (response.ok) {
-          const data = await response.json();
-          const currentFormatter = new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          });
-          self.cartsData = data;
-          self.cartsData.forEach((cart) => {
-            cart.totalPriceFormated = currentFormatter.format(cart.totalPrice);
-            cart.items.forEach((item) => {
-              item.unitPriceFormated = currentFormatter.format(item.unitPrice);
-              item.totalPriceFormated = currentFormatter.format(
-                item.totalPrice
-              );
-              if (!item.promotionDescription) {
-                item.promotionDescription = "Sem promoção";
-              }
-            });
-          });
-          self.cartsData.reverse();
-        }
-      });
-    },
-
-    async loadProducts() {
-      const self = this;
-      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
-      const userToken = `Bearer ${userDTO.token}`;
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: userToken,
-      };
-
-      await fetch(`http://localhost:8000/api/product/`, {
-        headers,
-      }).then(async (response) => {
-        if (response.ok) {
-          const data = await response.json();
-          const currentFormatter = new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          });
-          self.productsData = data;
-          self.productsData.forEach((product) => {
-            product.priceFormated = currentFormatter.format(product.price);
-            if (!product.sale) {
-              product.sale = "Sem promoção";
-            } else {
-              product.sale = product.sale.description;
-            }
-          });
-        }
-      });
     },
   },
 };

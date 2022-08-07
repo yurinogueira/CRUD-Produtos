@@ -1,6 +1,9 @@
 <template>
-  <el-scrollbar>
-    <el-table v-loading="loading" :data="cartsData" empty-text="Carrinho vazio">
+  <el-card v-loading="loading">
+    <template #header>
+      <span class="card-title">Carrinho</span>
+    </template>
+    <el-table :data="cartsData" empty-text="Carrinho vazio">
       <el-table-column prop="name" label="Nome" :fit="true" />
       <el-table-column prop="description" label="Descrição" :fit="true" />
       <el-table-column prop="priceFormated" label="Preço Unitário" />
@@ -20,18 +23,16 @@
       </el-table-column>
     </el-table>
     <el-row justify="center">
-      <el-col :span="4">
-        <el-button type="success" disabled>
+      <el-row style="width: 80%" :gutter="12" justify="space-between">
+        <el-button :span="6" type="success" disabled>
           TOTAL: {{ cartTotalPrice }}
         </el-button>
-      </el-col>
-      <el-col :span="4">
-        <el-button type="primary" @click="finishRequest()">
+        <el-button :span="6" type="primary" @click="finishRequest()">
           FINALIZAR PEDIDO!
         </el-button>
-      </el-col>
+      </el-row>
     </el-row>
-  </el-scrollbar>
+  </el-card>
 </template>
 
 <script>
@@ -72,6 +73,13 @@ export default defineComponent({
   },
 
   methods: {
+    async loadData() {
+      const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
+      this.cart = actualCart;
+      this.cartPrice = await this.getCartTotalPrice();
+      this.loading = false;
+    },
+
     async finishRequest() {
       if (!(this.cartsData.length > 0)) {
         ElMessage.error(
@@ -167,11 +175,8 @@ export default defineComponent({
     },
   },
 
-  async created() {
-    const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
-    this.cart = actualCart;
-    this.cartPrice = await this.getCartTotalPrice();
-    this.loading = false;
+  created() {
+    this.loadData();
   },
 });
 </script>

@@ -126,6 +126,7 @@ export default {
       self.loading = true;
 
       let isValid = await form.validate((valid, fields) => {
+        console.log(fields);
         if (!valid) {
           self.loading = false;
           ElMessage({

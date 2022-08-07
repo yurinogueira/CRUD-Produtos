@@ -1,10 +1,9 @@
 <template>
-  <el-scrollbar>
-    <el-table
-      v-loading="loading"
-      :data="tableData"
-      empty-text="Nenhum produto cadastrado"
-    >
+  <el-card v-loading="loading">
+    <template #header>
+      <span class="card-title">Catalogo</span>
+    </template>
+    <el-table :data="tableData" empty-text="Nenhum produto cadastrado">
       <el-table-column prop="name" label="Nome" :fit="true" />
       <el-table-column prop="description" label="Descrição" :fit="true" />
       <el-table-column prop="priceFormated" label="Preço Unitário" />
@@ -30,7 +29,7 @@
         </template>
       </el-table-column>
     </el-table>
-  </el-scrollbar>
+  </el-card>
 </template>
 
 <script>
@@ -39,23 +38,58 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "ProductComponent",
 
-  props: ["productsData"],
-
   data() {
     return {
       loading: true,
+      productsData: [],
       search: "",
       cart: {},
     };
   },
 
-  async created() {
-    const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
-    this.cart = actualCart;
-    this.loading = false;
+  created() {
+    this.loadData();
   },
 
   methods: {
+    async loadData() {
+      const actualCart = JSON.parse(localStorage.getItem("actualCart")) || {};
+      this.cart = actualCart;
+      await this.loadProducts();
+      this.loading = false;
+    },
+
+    async loadProducts() {
+      const self = this;
+      const userDTO = JSON.parse(localStorage.getItem("userDTO"));
+      const userToken = `Bearer ${userDTO.token}`;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: userToken,
+      };
+
+      await fetch(`http://localhost:8000/api/product/`, {
+        headers,
+      }).then(async (response) => {
+        if (response.ok) {
+          const data = await response.json();
+          const currentFormatter = new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          });
+          self.productsData = data;
+          self.productsData.forEach((product) => {
+            product.priceFormated = currentFormatter.format(product.price);
+            if (!product.sale) {
+              product.sale = "Sem promoção";
+            } else {
+              product.sale = product.sale.description;
+            }
+          });
+        }
+      });
+    },
+
     handleAdd(row) {
       const index = row.id;
       if (!this.cart[index]) {
