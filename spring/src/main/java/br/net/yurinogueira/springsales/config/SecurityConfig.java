@@ -52,6 +52,8 @@ public class SecurityConfig {
                 // Product USER Routers
                 .antMatchers(HttpMethod.GET, "/api/product/**")
                     .hasAnyRole("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/product/calculate/")
+                    .hasAnyRole("USER", "ADMIN")
                 // Product ADMIN Routers
                 .antMatchers("/api/product/**")
                     .hasAnyRole("ADMIN")

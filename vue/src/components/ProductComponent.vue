@@ -1,6 +1,10 @@
 <template>
   <el-scrollbar>
-    <el-table v-loading="loading" :data="tableData">
+    <el-table
+      v-loading="loading"
+      :data="tableData"
+      empty-text="Nenhum produto cadastrado"
+    >
       <el-table-column prop="name" label="Nome" :fit="true" />
       <el-table-column prop="description" label="Descrição" :fit="true" />
       <el-table-column prop="priceFormated" label="Preço Unitário" />
@@ -15,7 +19,7 @@
         </template>
         <template #default="scope">
           <el-button disabled round type="primary">
-            {{ cartAmount[scope.row.id] || 0 }}
+            {{ cartAmount[scope.row.id]?.amount || 0 }}
           </el-button>
           <el-button size="small" type="success" @click="handleAdd(scope.row)">
             +
@@ -55,18 +59,22 @@ export default defineComponent({
     handleAdd(row) {
       const index = row.id;
       if (!this.cart[index]) {
-        this.cart[index] = 0;
+        this.cart[index] = { amount: 0 };
       }
-      this.cart[index] += 1;
+      const amount = this.cart[index].amount + 1;
+      this.cart[index] = row;
+      this.cart[index].amount = amount;
       localStorage.setItem("actualCart", JSON.stringify(this.cart));
     },
 
     handleRm(row) {
       const index = row.id;
-      if (!this.cart[index] || this.cart[index] === 0) {
+      if (!this.cart[index] || this.cart[index].amount === 0) {
         return;
       }
-      this.cart[index] -= 1;
+      const amount = this.cart[index].amount - 1;
+      this.cart[index] = row;
+      this.cart[index].amount = amount;
       localStorage.setItem("actualCart", JSON.stringify(this.cart));
     },
   },
@@ -86,3 +94,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.el-scrollbar {
+  background-color: #ffffff;
+}
+</style>

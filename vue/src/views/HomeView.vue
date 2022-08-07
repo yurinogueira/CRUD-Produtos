@@ -45,7 +45,6 @@ export default {
     return {
       activeIndex: ref("0"),
       components: [true, false, false],
-      tableData: [],
       productsData: [],
       cartsData: [],
       userDTO: {},

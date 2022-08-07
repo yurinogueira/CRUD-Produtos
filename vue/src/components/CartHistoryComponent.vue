@@ -77,3 +77,9 @@ span {
   align-items: center;
 }
 </style>
+
+<style scoped>
+.el-scrollbar {
+  background-color: #ffffff;
+}
+</style>

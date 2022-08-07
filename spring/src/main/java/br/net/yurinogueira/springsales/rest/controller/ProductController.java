@@ -2,8 +2,10 @@ package br.net.yurinogueira.springsales.rest.controller;
 
 import br.net.yurinogueira.springsales.domain.entity.Product;
 import br.net.yurinogueira.springsales.domain.entity.Sale;
+import br.net.yurinogueira.springsales.domain.enums.SaleType;
 import br.net.yurinogueira.springsales.domain.service.ProductService;
 import br.net.yurinogueira.springsales.domain.service.SaleService;
+import br.net.yurinogueira.springsales.rest.dto.ItemDTO;
 import br.net.yurinogueira.springsales.rest.dto.ProductDTO;
 import br.net.yurinogueira.springsales.rest.dto.ProductInfoDTO;
 import br.net.yurinogueira.springsales.rest.dto.SaleInfoDTO;
@@ -102,6 +104,39 @@ public class ProductController {
         }
 
         productService.delete(id);
+    }
+
+    @PostMapping("calculate/")
+    public Double calculatePrice(@RequestBody List<ItemDTO> items) {
+        Double listItesPrice = 0.0;
+
+        for (ItemDTO itemDTO : items) {
+            Double totalPrice = 0.0;
+            Product product = productService.get(itemDTO.getProduct());
+            Double price = product.getBasePrice();
+            Sale sale = product.getSale();
+            Integer amount = itemDTO.getAmount();
+
+            if (sale != null) {
+                int residue = amount % sale.getSaleCheckAmount();
+                int amountOfSale = amount / sale.getSaleCheckAmount();
+                if (sale.getType() == SaleType.AMOUNT_PER_AMOUNT) {
+                    int total = residue + (amountOfSale * sale.getSaleAmount());
+                    totalPrice += (price * total);
+                }
+                else {
+                    Double totalBaseCost = price * residue;
+                    Double totalSaleCost = sale.getSalePrice() * amountOfSale;
+                    totalPrice += (totalBaseCost + totalSaleCost);
+                }
+            }
+            else {
+                totalPrice += (price * amount);
+            }
+            listItesPrice += totalPrice;
+        }
+
+        return listItesPrice;
     }
 
     @GetMapping
